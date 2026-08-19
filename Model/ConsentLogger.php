@@ -10,10 +10,16 @@ class ConsentLogger
 {
     private const TABLE = 'miniorange_pdprotect_consent_log';
 
+    private readonly ResourceConnection $resource;
+    private readonly RemoteAddress $remoteAddress;
+
     public function __construct(
-        private readonly ResourceConnection $resource,
-        private readonly RemoteAddress $remoteAddress
-    ) {}
+        ResourceConnection $resource,
+        RemoteAddress $remoteAddress
+    ) {
+        $this->resource = $resource;
+        $this->remoteAddress = $remoteAddress;
+    }
 
     public function log(string $status, ?int $customerId = null, string $countryCode = '', ?string $email = null): void
     {
@@ -29,5 +35,16 @@ class ConsentLogger
                 'created_at'     => (new \DateTime())->format('Y-m-d H:i:s'),
             ]
         );
+    }
+
+    public function hasActiveConsent(int $customerId): bool
+    {
+        $connection = $this->resource->getConnection();
+        $select = $connection->select()
+            ->from($this->resource->getTableName(self::TABLE), ['log_id'])
+            ->where('customer_id = ?', $customerId)
+            ->where('consent_status = ?', 'accepted')
+            ->limit(1);
+        return (bool) $connection->fetchOne($select);
     }
 }

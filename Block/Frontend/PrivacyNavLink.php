@@ -32,13 +32,16 @@ class PrivacyNavLink extends SortLink
      * @param ScopeConfigInterface $scopeConfig
      * @param array $data
      */
+    private readonly ScopeConfigInterface $scopeConfig;
+
     public function __construct(
         Context $context,
         DefaultPathInterface $defaultPath,
-        private readonly ScopeConfigInterface $scopeConfig,
+        ScopeConfigInterface $scopeConfig,
         array $data = []
     ) {
         parent::__construct($context, $defaultPath, $data);
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**

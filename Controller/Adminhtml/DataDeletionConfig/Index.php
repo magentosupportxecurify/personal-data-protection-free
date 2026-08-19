@@ -15,11 +15,14 @@ class Index extends Action
 {
     public const ADMIN_RESOURCE = 'MiniOrange_PDProtect::datadeletionconfig';
 
+    private readonly PageFactory $pageFactory;
+
     public function __construct(
         Context $context,
-        private readonly PageFactory $pageFactory
+        PageFactory $pageFactory
     ) {
         parent::__construct($context);
+        $this->pageFactory = $pageFactory;
     }
 
     public function execute()

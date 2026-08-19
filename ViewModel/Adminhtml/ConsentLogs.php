@@ -15,11 +15,19 @@ class ConsentLogs implements ArgumentInterface
     private const ALLOWED_LIMITS = [10, 20, 50, 100];
     private const ALLOWED_STATUS_FILTERS = ['all', 'accepted', 'withdrawn', 'guest'];
 
+    private readonly ResourceConnection $resource;
+    private readonly UrlInterface $urlBuilder;
+    private readonly RequestInterface $request;
+
     public function __construct(
-        private readonly ResourceConnection $resource,
-        private readonly UrlInterface $urlBuilder,
-        private readonly RequestInterface $request
-    ) {}
+        ResourceConnection $resource,
+        UrlInterface $urlBuilder,
+        RequestInterface $request
+    ) {
+        $this->resource = $resource;
+        $this->urlBuilder = $urlBuilder;
+        $this->request = $request;
+    }
 
     public function getLimit(): int
     {

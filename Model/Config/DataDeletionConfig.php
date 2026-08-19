@@ -15,9 +15,13 @@ class DataDeletionConfig
     public const BATCH_LIMIT_QUOTES = 200;
     public const BATCH_LIMIT_ORDERS = 200;
 
+    private readonly ScopeConfigInterface $scopeConfig;
+
     public function __construct(
-        private readonly ScopeConfigInterface $scopeConfig
-    ) {}
+        ScopeConfigInterface $scopeConfig
+    ) {
+        $this->scopeConfig = $scopeConfig;
+    }
 
     public function isAbandonedDeletionEnabled(): bool { return false; }
     public function getAbandonedValue(): int { return 2; }

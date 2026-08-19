@@ -7,9 +7,13 @@ use MiniOrange\PDProtect\Model\ConsentLogCleaner;
 
 class CleanConsentLog
 {
+    private readonly ConsentLogCleaner $cleaner;
+
     public function __construct(
-        private readonly ConsentLogCleaner $cleaner
-    ) {}
+        ConsentLogCleaner $cleaner
+    ) {
+        $this->cleaner = $cleaner;
+    }
 
     public function execute(): void
     {

@@ -15,12 +15,22 @@ class DeletionRequests implements ArgumentInterface
     private const ALLOWED_LIMITS = [10, 20, 50, 100];
     private const ALLOWED_STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected'];
 
+    private readonly ResourceConnection $resource;
+    private readonly UrlInterface $urlBuilder;
+    private readonly RequestInterface $request;
+    private readonly PDProtectHelper $helper;
+
     public function __construct(
-        private readonly ResourceConnection $resource,
-        private readonly UrlInterface $urlBuilder,
-        private readonly RequestInterface $request,
-        private readonly PDProtectHelper $helper
-    ) {}
+        ResourceConnection $resource,
+        UrlInterface $urlBuilder,
+        RequestInterface $request,
+        PDProtectHelper $helper
+    ) {
+        $this->resource = $resource;
+        $this->urlBuilder = $urlBuilder;
+        $this->request = $request;
+        $this->helper = $helper;
+    }
 
     public function hasReachedDeleteLimit(): bool
     {
@@ -82,6 +92,11 @@ class DeletionRequests implements ArgumentInterface
     {
         $conditions = [];
 
+        $sandboxStoreId = $this->helper->getEffectiveSandboxStoreId();
+        if ($sandboxStoreId !== null) {
+            $conditions[] = 'store_id = ' . (int) $sandboxStoreId;
+        }
+
         $filter = $this->getStatusFilter();
         if ($filter !== 'all') {
             $conditions[] = "status = '{$filter}'";
@@ -111,8 +126,12 @@ class DeletionRequests implements ArgumentInterface
     {
         $connection = $this->resource->getConnection();
         $table      = $this->resource->getTableName('miniorange_pdprotect_deletion_request');
-        $rows       = $connection->fetchAll(
-            "SELECT status, COUNT(*) AS cnt FROM {$table} GROUP BY status"
+
+        $sandboxStoreId = $this->helper->getEffectiveSandboxStoreId();
+        $where = $sandboxStoreId !== null ? ' WHERE store_id = ' . (int) $sandboxStoreId : '';
+
+        $rows = $connection->fetchAll(
+            "SELECT status, COUNT(*) AS cnt FROM {$table}{$where} GROUP BY status"
         );
         $counts = ['pending' => 0, 'approved' => 0, 'rejected' => 0];
         foreach ($rows as $row) {

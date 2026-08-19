@@ -14,9 +14,13 @@ use Magento\Framework\Controller\Result\JsonFactory;
  */
 class RequestDeletion implements HttpPostActionInterface
 {
+    private readonly JsonFactory $jsonFactory;
+
     public function __construct(
-        private readonly JsonFactory $jsonFactory
-    ) {}
+        JsonFactory $jsonFactory
+    ) {
+        $this->jsonFactory = $jsonFactory;
+    }
 
     public function execute()
     {

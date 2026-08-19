@@ -9,6 +9,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Store\Model\ScopeInterface;
 use MiniOrange\PDProtect\Logger\Logger;
 
 class Data extends AbstractHelper
@@ -48,10 +49,11 @@ class Data extends AbstractHelper
     public function flushCache(string $from = ''): void
     {
         try {
-            $this->log_debug("FlushCache: Flushing config + full_page cache from: " . $from);
+            $this->log_debug("FlushCache: Flushing config + block_html + full_page cache from: " . $from);
             $this->cacheTypeList->cleanType('config');
+            $this->cacheTypeList->cleanType('block_html');
             $this->cacheTypeList->cleanType('full_page');
-            $this->log_debug("FlushCache: Successfully flushed config and full_page caches");
+            $this->log_debug("FlushCache: Successfully flushed caches");
         } catch (\Exception $e) {
             $this->log_debug("FlushCache: Error flushing cache: " . $e->getMessage());
         }
@@ -62,11 +64,84 @@ class Data extends AbstractHelper
         $this->reinitableConfig->reinit();
     }
 
+    private ?int $sandboxStoreId = null;
+    private bool $sandboxScopeResolved = false;
+
+    public function getEffectiveSandboxStoreId(): ?int
+    {
+        return $this->resolveSandboxStoreId();
+    }
+
+    public function isSandboxAdmin(): bool
+    {
+        return $this->resolveSandboxStoreId() !== null;
+    }
+
+    private function resolveSandboxStoreId(): ?int
+    {
+        if (!$this->sandboxScopeResolved) {
+            $transport = new \Magento\Framework\DataObject(['store_id' => null]);
+            $this->_eventManager->dispatch('mo_pdprotect_get_scope', ['transport' => $transport]);
+            $id = $transport->getData('store_id');
+            $this->sandboxStoreId = $id !== null ? (int) $id : null;
+            $this->sandboxScopeResolved = true;
+        }
+        return $this->sandboxStoreId;
+    }
+
+    public function getStoreConfig(string $path): mixed
+    {
+        $storeId = $this->resolveSandboxStoreId();
+        if ($storeId !== null) {
+            return $this->pdScopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
+        }
+        return $this->pdScopeConfig->getValue($path);
+    }
+
+    public function setStoreConfig(string $path, mixed $value): void
+    {
+        $transport = new \Magento\Framework\DataObject([
+            'path'    => $path,
+            'value'   => $value,
+            'handled' => false,
+        ]);
+        $this->_eventManager->dispatch('mo_pdprotect_config_save', ['transport' => $transport]);
+
+        if (!$transport->getData('handled')) {
+            $this->configWriter->save($path, $value, 'default', 0);
+        }
+        $this->flushCache('setStoreConfig');
+        $this->reinitConfig();
+    }
+
     // ── Free / Premium feature gates ─────────────────────────
 
     public function isPremium(): bool
     {
         return false;
+    }
+
+    // ── Trial / License status stubs (overridden by PDProtectPremium\Helper\Data) ─────
+    // Safe defaults for the free module — none of these conditions ever apply there.
+
+    public function isLicenseVerified(): bool
+    {
+        return false;
+    }
+
+    public function isTrialActive(): bool
+    {
+        return false;
+    }
+
+    public function isTrialExpired(): bool
+    {
+        return false;
+    }
+
+    public function getTrialDaysRemaining(): int
+    {
+        return 0;
     }
 
     public function isPremiumVersion(): bool

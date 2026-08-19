@@ -16,11 +16,19 @@ use MiniOrange\PDProtect\Helper\Data as PDProtectHelper;
  */
 class AnonymizeData implements HttpPostActionInterface
 {
+    private readonly JsonFactory $jsonFactory;
+    private readonly CustomerSession $customerSession;
+    private readonly PDProtectHelper $dataHelper;
+
     public function __construct(
-        private readonly JsonFactory $jsonFactory,
-        private readonly CustomerSession $customerSession,
-        private readonly PDProtectHelper $dataHelper
-    ) {}
+        JsonFactory $jsonFactory,
+        CustomerSession $customerSession,
+        PDProtectHelper $dataHelper
+    ) {
+        $this->jsonFactory = $jsonFactory;
+        $this->customerSession = $customerSession;
+        $this->dataHelper = $dataHelper;
+    }
 
     public function execute()
     {

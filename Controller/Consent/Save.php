@@ -19,15 +19,31 @@ class Save implements HttpPostActionInterface, CsrfAwareActionInterface
 {
     private const COUNTRY_SESSION_KEY = 'mopdp_visitor_country';
 
+    private readonly RequestInterface $request;
+    private readonly JsonFactory $jsonFactory;
+    private readonly ScopeConfigInterface $scopeConfig;
+    private readonly CustomerSession $customerSession;
+    private readonly SessionManagerInterface $session;
+    private readonly ConsentLogger $consentLogger;
+    private readonly Data $dataHelper;
+
     public function __construct(
-        private readonly RequestInterface $request,
-        private readonly JsonFactory $jsonFactory,
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly CustomerSession $customerSession,
-        private readonly SessionManagerInterface $session,
-        private readonly ConsentLogger $consentLogger,
-        private readonly Data $dataHelper
-    ) {}
+        RequestInterface $request,
+        JsonFactory $jsonFactory,
+        ScopeConfigInterface $scopeConfig,
+        CustomerSession $customerSession,
+        SessionManagerInterface $session,
+        ConsentLogger $consentLogger,
+        Data $dataHelper
+    ) {
+        $this->request = $request;
+        $this->jsonFactory = $jsonFactory;
+        $this->scopeConfig = $scopeConfig;
+        $this->customerSession = $customerSession;
+        $this->session = $session;
+        $this->consentLogger = $consentLogger;
+        $this->dataHelper = $dataHelper;
+    }
 
     public function execute()
     {
@@ -55,15 +71,15 @@ class Save implements HttpPostActionInterface, CsrfAwareActionInterface
 
         $countryCode = (string) $this->session->getData(self::COUNTRY_SESSION_KEY);
 
-        if ($isLoggedIn) {
+        if (!$logGuests) {
+            $this->dataHelper->log_debug('Consent\Save: skipping DB log (Record consent disabled)');
+        } elseif ($isLoggedIn) {
             $this->dataHelper->log_debug('Consent\Save: writing consent log to DB (logged-in customer)');
             $customer = $this->customerSession->getCustomer();
             $this->consentLogger->log($status, (int) $customer->getId(), $countryCode, $customer->getEmail());
-        } elseif ($logGuests) {
+        } else {
             $this->dataHelper->log_debug('Consent\Save: writing consent log to DB (guest)');
             $this->consentLogger->log($status, null, $countryCode, null);
-        } else {
-            $this->dataHelper->log_debug('Consent\Save: skipping DB log');
         }
 
         return $result->setData(['success' => true]);

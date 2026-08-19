@@ -12,11 +12,19 @@ class Confirm implements HttpGetActionInterface
 {
     private const VALID_ACTIONS = ['download', 'anonymize', 'delete', 'withdraw'];
 
+    private readonly PageFactory $pageFactory;
+    private readonly CustomerSession $customerSession;
+    private readonly RedirectFactory $redirectFactory;
+
     public function __construct(
-        private readonly PageFactory $pageFactory,
-        private readonly CustomerSession $customerSession,
-        private readonly RedirectFactory $redirectFactory
-    ) {}
+        PageFactory $pageFactory,
+        CustomerSession $customerSession,
+        RedirectFactory $redirectFactory
+    ) {
+        $this->pageFactory = $pageFactory;
+        $this->customerSession = $customerSession;
+        $this->redirectFactory = $redirectFactory;
+    }
 
     public function execute()
     {

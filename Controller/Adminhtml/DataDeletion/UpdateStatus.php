@@ -13,13 +13,20 @@ class UpdateStatus extends Action
 {
     public const ADMIN_RESOURCE = 'MiniOrange_PDProtect::data_deletion';
 
+    private readonly ResourceConnection $resource;
+    private readonly CustomerDataEraser $dataEraser;
+    private readonly PDProtectHelper $helper;
+
     public function __construct(
         Context $context,
-        private readonly ResourceConnection $resource,
-        private readonly CustomerDataEraser $dataEraser,
-        private readonly PDProtectHelper $helper
+        ResourceConnection $resource,
+        CustomerDataEraser $dataEraser,
+        PDProtectHelper $helper
     ) {
         parent::__construct($context);
+        $this->resource = $resource;
+        $this->dataEraser = $dataEraser;
+        $this->helper = $helper;
     }
 
     public function execute()
@@ -45,12 +52,18 @@ class UpdateStatus extends Action
         $table      = $this->resource->getTableName('miniorange_pdprotect_deletion_request');
 
         $row = $connection->fetchRow(
-            "SELECT customer_id FROM {$table} WHERE request_id = ?",
+            "SELECT customer_id, store_id FROM {$table} WHERE request_id = ?",
             [$requestId]
         );
 
         if (!$row) {
             $this->messageManager->addErrorMessage(__('Deletion request not found.'));
+            return $this->resultRedirectFactory->create()->setPath('mopdp/datadeletion/index');
+        }
+
+        $sandboxStoreId = $this->helper->getEffectiveSandboxStoreId();
+        if ($sandboxStoreId !== null && (int) ($row['store_id'] ?? 0) !== $sandboxStoreId) {
+            $this->messageManager->addErrorMessage(__('Access denied.'));
             return $this->resultRedirectFactory->create()->setPath('mopdp/datadeletion/index');
         }
 

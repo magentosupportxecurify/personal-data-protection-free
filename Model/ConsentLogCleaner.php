@@ -14,11 +14,19 @@ class ConsentLogCleaner
     // Free tier: always clean logs older than 1 day; period/unit config is premium-only.
     private const FREE_PERIOD_DAYS = 1;
 
+    private readonly ScopeConfigInterface $scopeConfig;
+    private readonly ResourceConnection $resource;
+    private readonly Data $dataHelper;
+
     public function __construct(
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly ResourceConnection $resource,
-        private readonly Data $dataHelper
-    ) {}
+        ScopeConfigInterface $scopeConfig,
+        ResourceConnection $resource,
+        Data $dataHelper
+    ) {
+        $this->scopeConfig = $scopeConfig;
+        $this->resource = $resource;
+        $this->dataHelper = $dataHelper;
+    }
 
     public function execute(): void
     {

@@ -23,11 +23,19 @@ class AdminSessionObserver implements ObserverInterface
         'account'           => 'Account',
     ];
 
+    private readonly ScopeConfigInterface $scopeConfig;
+    private readonly TrackingService $trackingService;
+    private readonly RequestInterface $request;
+
     public function __construct(
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly TrackingService $trackingService,
-        private readonly RequestInterface $request
-    ) {}
+        ScopeConfigInterface $scopeConfig,
+        TrackingService $trackingService,
+        RequestInterface $request
+    ) {
+        $this->scopeConfig = $scopeConfig;
+        $this->trackingService = $trackingService;
+        $this->request = $request;
+    }
 
     public function execute(Observer $observer): void
     {

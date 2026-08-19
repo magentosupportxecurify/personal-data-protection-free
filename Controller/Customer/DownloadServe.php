@@ -16,11 +16,19 @@ use MiniOrange\PDProtect\Helper\Data as PDProtectHelper;
  */
 class DownloadServe implements HttpGetActionInterface
 {
+    private readonly CustomerSession $customerSession;
+    private readonly RedirectFactory $redirectFactory;
+    private readonly PDProtectHelper $dataHelper;
+
     public function __construct(
-        private readonly CustomerSession $customerSession,
-        private readonly RedirectFactory $redirectFactory,
-        private readonly PDProtectHelper $dataHelper
-    ) {}
+        CustomerSession $customerSession,
+        RedirectFactory $redirectFactory,
+        PDProtectHelper $dataHelper
+    ) {
+        $this->customerSession = $customerSession;
+        $this->redirectFactory = $redirectFactory;
+        $this->dataHelper = $dataHelper;
+    }
 
     public function execute()
     {

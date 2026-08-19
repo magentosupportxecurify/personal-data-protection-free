@@ -13,12 +13,22 @@ use Magento\Store\Model\ScopeInterface;
 
 class Privacy implements HttpGetActionInterface
 {
+    private readonly PageFactory $pageFactory;
+    private readonly CustomerSession $customerSession;
+    private readonly RedirectFactory $redirectFactory;
+    private readonly ScopeConfigInterface $scopeConfig;
+
     public function __construct(
-        private readonly PageFactory $pageFactory,
-        private readonly CustomerSession $customerSession,
-        private readonly RedirectFactory $redirectFactory,
-        private readonly ScopeConfigInterface $scopeConfig
-    ) {}
+        PageFactory $pageFactory,
+        CustomerSession $customerSession,
+        RedirectFactory $redirectFactory,
+        ScopeConfigInterface $scopeConfig
+    ) {
+        $this->pageFactory = $pageFactory;
+        $this->customerSession = $customerSession;
+        $this->redirectFactory = $redirectFactory;
+        $this->scopeConfig = $scopeConfig;
+    }
 
     public function execute()
     {

@@ -8,9 +8,13 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 class InitFreeConfig implements DataPatchInterface
 {
+    private readonly WriterInterface $configWriter;
+
     public function __construct(
-        private readonly WriterInterface $configWriter
-    ) {}
+        WriterInterface $configWriter
+    ) {
+        $this->configWriter = $configWriter;
+    }
 
     public function apply(): self
     {

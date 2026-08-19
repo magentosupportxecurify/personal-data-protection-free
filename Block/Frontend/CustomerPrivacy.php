@@ -11,13 +11,18 @@ use MiniOrange\PDProtect\Helper\Data;
 
 class CustomerPrivacy extends Template
 {
+    private readonly ScopeConfigInterface $scopeConfig;
+    protected readonly Data $dataHelper;
+
     public function __construct(
         Context $context,
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly Data $dataHelper,
+        ScopeConfigInterface $scopeConfig,
+        Data $dataHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
+        $this->scopeConfig = $scopeConfig;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getTabName(): string

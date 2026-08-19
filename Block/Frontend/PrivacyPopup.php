@@ -12,14 +12,21 @@ use MiniOrange\PDProtect\Helper\Data;
 
 class PrivacyPopup extends Template
 {
+    private readonly ScopeConfigInterface $scopeConfig;
+    private readonly Data $dataHelper;
+    private readonly CookieManagerInterface $cookieManager;
+
     public function __construct(
         Context $context,
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly Data $dataHelper,
-        private readonly CookieManagerInterface $cookieManager,
+        ScopeConfigInterface $scopeConfig,
+        Data $dataHelper,
+        CookieManagerInterface $cookieManager,
         array $data = []
     ) {
         parent::__construct($context, $data);
+        $this->scopeConfig = $scopeConfig;
+        $this->dataHelper = $dataHelper;
+        $this->cookieManager = $cookieManager;
     }
 
     public function isPopupEnabled(): bool
