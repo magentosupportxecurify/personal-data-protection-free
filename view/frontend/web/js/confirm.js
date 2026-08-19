@@ -39,7 +39,9 @@
             btn.disabled = false;
 
             var resp;
-            try { resp = JSON.parse(xhr.responseText); }
+            try {
+                resp = JSON.parse(xhr.responseText); 
+            }
             catch (e) {
                 showError(cfg.msgUnexpected || 'An unexpected error occurred.');
                 return;
